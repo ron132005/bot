@@ -34,7 +34,7 @@ app.post('/webhook', (req, res) => {
       const message = event.message?.text;
 
       if (message) {
-        sendMessage(senderId, `You said: ${message}`);
+        handleUserMessage(senderId, message.trim().toLowerCase());
       }
     });
     res.status(200).send('EVENT_RECEIVED');
@@ -43,13 +43,25 @@ app.post('/webhook', (req, res) => {
   }
 });
 
-function sendMessage(recipientId, text) {
-  axios.post(`https://graph.facebook.com/v12.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`, {
-    recipient: { id: recipientId },
-    message: { text: text }
-  }).catch(error => {
-    console.error('Error sending message:', error.response?.data || error.message);
-  });
+function handleUserMessage(senderId, message) {
+  if (["hi", "hello", "hey"].includes(message)) {
+    sendMessage(senderId, "👋 Hello! I’m your friendly bot.\nType 'menu' to see what I can do.");
+  } else if (message.includes("menu")) {
+    sendMessage(senderId,
+      "📋 Here's what I can do:\n" +
+      "- Type 'joke' to get a random joke 🤡\n" +
+      "- Type 'quote' for a motivational quote 💡\n" +
+      "- Type 'help' if you're stuck ❓"
+    );
+  } else if (message.includes("joke")) {
+    sendMessage(senderId, "Why don’t skeletons fight each other? They don’t have the guts! 💀");
+  } else if (message.includes("quote")) {
+    sendMessage(senderId, "“The best way to get started is to quit talking and begin doing.” — Walt Disney");
+  } else if (message.includes("help")) {
+    sendMessage(senderId, "Type 'menu' to see the full list of commands. I’m always here to help!");
+  } else {
+    sendMessage(senderId, "😕 Sorry, I didn’t get that.\nType 'menu' to see what I can do.");
+  }
 }
 
 const PORT = process.env.PORT || 3000;
